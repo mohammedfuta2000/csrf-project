@@ -17,7 +17,7 @@ var (
 func main()  {
 	db.InitDB()
 
-	jwtErr:=myJwt.InitJwt()
+	jwtErr:=myJwt.InitJWT()
 
 	if jwtErr!=nil {
 		fmt.Println("Error initializing JWT!")

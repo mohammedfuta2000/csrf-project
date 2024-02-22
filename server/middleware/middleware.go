@@ -65,7 +65,7 @@ func authHandler(next http.Handler) http.Handler {
 			requestCsrfToken := grabCsrfFromReq(r)
 			log.Println(requestCsrfToken)
 
-			authTokenString, refreshTokenString, csrfSecret, err := myJwt.CheckAndRefreshingTokens(AuthCookie.Value, RefreshCookie.Value, requestCsrfToken)
+			authTokenString, refreshTokenString, csrfSecret, err := myJwt.CheckAndRefreshTokens(AuthCookie.Value, RefreshCookie.Value, requestCsrfToken)
 			if err != nil {
 				if err.Error() == "Unauthorized" {
 					log.Println("Unauthorized attempt! JWT is not valid")
@@ -95,7 +95,7 @@ func logicHandler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/restricted":
 		csrfSecret := grabCsrfFromReq(r)
-		templates.RenderTemplate(w, "restricted", &templates.RestrictedPage{BAlertUser: csrfSecret, AlertMsg: "hello Moh"})
+		templates.RenderTemplate(w, "restricted", &templates.RestrictedPage{CsrfSecret: csrfSecret, SecretMessage: "hello Moh"})
 	case "/login":
 		switch r.Method {
 		case "GET":

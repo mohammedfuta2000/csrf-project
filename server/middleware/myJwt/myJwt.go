@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	priKeyPath = "keys/app.rsa"
-	pubKeyPath = "keys/app.rsa.pub"
+	privKeyPath = "keys/app.rsa"
+	pubKeyPath  = "keys/app.rsa.pub"
 )
 
 var (
@@ -22,8 +22,8 @@ var (
 	signKey   *rsa.PrivateKey
 )
 
-func InitJwt() error {
-	signBytes, err := os.ReadFile(priKeyPath)
+func InitJWT() error {
+	signBytes, err := os.ReadFile(privKeyPath)
 	if err != nil {
 		return err
 	}
@@ -43,9 +43,9 @@ func InitJwt() error {
 	}
 	return nil
 }
-func CreateNewTokens(uuid, role string) (authTokenString, refreshTokenString, csrfToken string, err error) {
+func CreateNewTokens(uuid, role string) (authTokenString, refreshTokenString, csrfSecret string, err error) {
 	// generate csrf secret, refresh and auth tokens
-	csrfSecret, err := models.GenerateCSRFSecret()
+	csrfSecret, err = models.GenerateCSRFSecret()
 	if err != nil {
 		return
 	}
@@ -61,13 +61,13 @@ func CreateNewTokens(uuid, role string) (authTokenString, refreshTokenString, cs
 	return
 
 }
-func CheckAndRefreshingTokens(oldAuthTokenString, oldRefreshTokenString, oldCsrfsecret string) (newAuthTokenString, newRefreshTokenString, newCsrfSecret string, err error) {
+func CheckAndRefreshTokens(oldAuthTokenString, oldRefreshTokenString, oldCsrfsecret string) (newAuthTokenString, newRefreshTokenString, newCsrfSecret string, err error) {
 	if oldCsrfsecret == "" {
 		log.Println("NO CSRF token")
 		err = errors.New("Unauthorized")
 		return
 	}
-	authToken, _ := jwt.ParseWithClaims(oldAuthTokenString, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+	authToken, err := jwt.ParseWithClaims(oldAuthTokenString, &models.TokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return verifyKey, nil
 	})
 	authTokenClaims, ok := authToken.Claims.(*models.TokenClaims)
@@ -85,7 +85,8 @@ func CheckAndRefreshingTokens(oldAuthTokenString, oldRefreshTokenString, oldCsrf
 		log.Println("AuthToken is valid")
 
 		newCsrfSecret = authTokenClaims.Csrf
-		newRefreshTokenString, err = updateRefreshTokenExp(oldAuthTokenString)
+		// newRefreshTokenString, err = updateRefreshTokenExp(oldAuthTokenString)
+		newRefreshTokenString, err = updateRefreshTokenExp(oldRefreshTokenString)
 		newAuthTokenString = oldAuthTokenString
 		return
 	} else if ve, ok := err.(*jwt.ValidationError); ok {

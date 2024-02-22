@@ -17,8 +17,8 @@ type RegisterPage struct {
 }
 
 type RestrictedPage struct {
-	BAlertUser string
-	AlertMsg   string
+	CsrfSecret string
+	SecretMessage string
 }
 
 var templates = template.Must(template.ParseFiles(
